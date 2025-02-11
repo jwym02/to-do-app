@@ -1,6 +1,32 @@
 <script setup>
 import Header from './header.vue'
-import './task.js'
+import { ref, onMounted } from 'vue'
+import { getTasks, subscribeToTaskUpdates } from './task.js'
+
+
+const task = ref('')
+const currentTasks = ref([]) // Make currentTasks reactive
+
+
+async function fetchTasks() {
+  currentTasks.value = []; // Clear before fetching
+  const tasks = await getTasks();
+  console.log("Fetched tasks:", tasks);
+  currentTasks.value = tasks;
+}
+
+function addTask(e) {
+  e.preventDefault();
+  console.log(task.value)
+}
+
+// onMounted(() => {
+  fetchTasks();
+//   if (!subscribeToTaskUpdates.isSubscribed) {
+//     subscribeToTaskUpdates(fetchTasks);
+//     subscribeToTaskUpdates.isSubscribed = true; // Prevent multiple subscriptions
+//   }
+// });
 </script>
 
 <template>
@@ -9,15 +35,19 @@ import './task.js'
     <div class="intro">
       <h3>Welcome to do your to-do app!</h3>
       <p>What do you want to add today?</p>
-      <input type="text" class = "input-field" placeholder="Add a task"/>
+      <form @submit="addTask">
+        <input type="text" id="task-input" v-model="task" class = "input-field" placeholder="Add a task"/>
+        <button type="submit"></button>
+      </form>
     </div>
 
-    <div class="task-list">
+    <div class="task-list" id="task-list">
       <ul>
-        <li>Task 1</li>
-        <li>Task 2</li>
-        <li>Task 3</li>
+        <!-- <li v-for="task in currentTasks" :key="task.id">
+          {{ task.name }}
+        </li> -->
       </ul>
+      <p>{{ currentTasks.length}}</p>
     </div>
   </div>
   
