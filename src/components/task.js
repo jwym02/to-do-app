@@ -7,20 +7,19 @@ let isSubscribed = false; // Track subscription status
 
 export async function getTasks() {
 // check if user has added any tasks
-    const { data: tasks, error } = await supabase
+    let { data: tasks, error } = await supabase
     .from('tasks')
-    .select('id');
+    .select('*');
 
-    
     if (error) {
         console.error("Supabase error:", error);
         return [];
-        } else if (tasks.length === 0) {
-            return "No tasks found"
-        } else {
-            console.log("Tasks found:", tasks);
-            return tasks || [];
-        }
+    } else if (tasks.length === 0) {
+        console.log("No tasks found RAHHHH")
+    } else {
+        console.log("i found some!")
+        return tasks || [];
+    }
 }
 
 // Real-time listener for changes in 'tasks' table
@@ -39,4 +38,25 @@ export function subscribeToTaskUpdates(callback) {
         )
         .subscribe();
     isSubscribed = true; // Mark as subscribed
+}
+
+export async function addTask(taskData) {
+    console.log("taskData received:", taskData);
+    let { data, error } = await supabase
+    .from('tasks')
+    .insert([
+        {
+        name: taskData.name,
+        due_date: taskData.due_date,
+        due_time: taskData.due_time,
+        category: taskData.category
+        }
+    ])
+
+    if (error) {
+        console.error("Error adding task", error);
+    } else {
+        console.log("Task added", data);
+        return {success:true, data};
+    }
 }
