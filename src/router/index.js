@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import home from '../components/task.vue'
+import Login from '../components/login.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -7,7 +7,7 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: home,
+      component: Login,
     },
     {
       path: '/about',

@@ -1,9 +1,7 @@
 <script setup>
 import Header from './header.vue'
 import { ref, onMounted } from 'vue'
-import { getTasks, subscribeToTaskUpdates, addTask } from './task.js'
-
-
+import { getTasks, subscribeToTaskUpdates, addTask, deleteTask } from './task.js'
 
 const task = ref({
   name: '',
@@ -17,19 +15,28 @@ let counter = 0;
 
 async function fetchTasks() {
   currentTasks.value = []; // Clear before fetching
-  const currentTasks = await getTasks();
-  consolelog("current is " + currentTasks)
-  // currentTasks.value = tasks;
+  const tasks = await getTasks();
+  console.log("current is " + tasks)
+  currentTasks.value = tasks;
 }
 
 async function handleAddTask(e) {
   e.preventDefault();
-  const result = await addTask(this.task);
+  const result = await addTask(task.value);
   if (result.success) {
     alert("Task added successfully!");
   } else {
     alert("Error adding task.");
 }
+}
+
+async function handleDeleteTask(id) {
+  const result = await deleteTask(id);
+  if (result.success) {
+    alert("Task deleted successfully!");
+  } else {
+    alert("Error deleting task.");
+  }
 }
 
 onMounted(() => {
@@ -42,16 +49,17 @@ onMounted(() => {
 </script>
 
 <template>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <Header/>
   <div class="container-fluid">
     <div class="intro">
       <h3>Welcome to do your to-do app!</h3>
       <p>What do you want to add today?</p>
-      <form @submit="addTask">
+      <form @submit="handleAddTask">
         <div class="d-flex flex-column align-items-center">
           Task name: <input type="text" id="task-input" v-model="task.name" class="input-field" placeholder="Add a task"/>
           Task due date: <input type="date" v-model="task.due_date" class="input-field" placeholder="Add a due date">
-          Task due time: (24 hour HH/MM)  <input type="text" v-model="task.due_time" class="input-field" placeholder="Add a due time">
+          Task due time: (24 hour HH:MM)  <input type="text" v-model="task.due_time" class="input-field" placeholder="Add a due time">
           Task category: <input type="text" v-model="task.category" class="input-field" placeholder="Add the category this task belongs to">
         </div>
         <button type="submit" class="addTask">Add</button>
@@ -70,20 +78,22 @@ onMounted(() => {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(task, index) in currentTasks" :key="task.id">
+          <tr v-for="(task, index) in currentTasks" :key="task.id" >
             <td>{{ index + 1 }}</td> 
             <td>{{ task.name }}</td>
             <td>{{ task.due_date }}</td>
             <td>{{ task.due_time.slice(0, 5) }}</td>
             <td>{{ task.category }}</td>
+            <td>
+              <button style="font-size:24px" @click="handleDeleteTask(task.id)">
+                <i class="fa fa-trash-o"></i>
+              </button>
+            </td>
           </tr>
         </tbody>
       </table>
     </div>
   </div>
-  
-
-
 </template>
 
 <style scoped>
@@ -109,14 +119,14 @@ onMounted(() => {
     justify-content: center;
     margin-right: 5em;
     margin-left: 5em;
+    margin-bottom: 60px;
   }
 
   .addTask {
     margin-left: 30px;
   }
 
-  button {
-    outline: none;
+  .addTask, .button {
  cursor: pointer;
  border: none;
  padding: 0.9rem 2rem;
@@ -133,36 +143,15 @@ onMounted(() => {
  background: #66ff66;
  color: white !important;
   }
-  button:hover {
-    color: black;
-  }
-  button::before,
-  button::after {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-
-  }
-
-  button::before {
-  content: "";
-  background: #000;
-  width: 120%;
-  left: -10%;
-  transform: skew(30deg);
-  transition: transform 0.4s cubic-bezier(0.3, 1, 0.8, 1);
-  }
-
-  button:hover::before {
-  transform: translate3d(100%, 0, 0);
-  }
 
   .format {
     display: flex;
     justify-content: center;
     align-items: center;
+  }
+
+  .fa {
+    color: red;
+    outline: none;
   }
 </style>

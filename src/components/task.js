@@ -60,3 +60,17 @@ export async function addTask(taskData) {
         return {success:true, data};
     }
 }
+
+export async function deleteTask(id) {
+    let { data, error } = await supabase
+    .from('tasks')
+    .delete()
+    .eq('id', id);
+
+    if (error) {
+        console.error("Error deleting task", error);
+    } else {
+        console.log("Task deleted", data);
+        return {success:true, data};
+    }
+}
