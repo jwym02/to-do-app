@@ -27,7 +27,7 @@
 <template>
     <h2>hi!!</h2>
     <!-- Google Sign-in button -->
-    <!-- <div class="g-signin2" data-onsuccess="onSignIn"></div> -->
+    <div class="g-signin2" data-onsuccess="onSignIn"></div>
 </template>
 
 <style scoped>

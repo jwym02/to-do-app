@@ -6,11 +6,13 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "bot": "node src/bot.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.48.1",
     "dotenv": "^16.4.7",
+    "node-telegram-bot-api": "^0.66.0",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0"
   },
