@@ -1,54 +1,42 @@
 <script setup>
     import { ref, onMounted } from 'vue';
     import { createClient } from '@supabase/supabase-js'
+    import { useRouter } from 'vue-router';
     const email = ref('');
     const password = ref('');
     const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const supabase = createClient(supabaseUrl, supabaseKey);
+    const router = useRouter();
+    const errorMsg = ref('');
 
-
-    onMounted(() => {
-        const script = document.createElement('script');
-        script.src = 'https://apis.google.com/js/platform.js';
-        script.async = true;
-        script.defer = true;
-        document.head.appendChild(script);
-
-        const metaTag = document.createElement('meta');
-        metaTag.name = 'google-signin-client_id';
-        metaTag.content = `${import.meta.env.VITE_GOOGLE_CLIENT_ID}.apps.googleusercontent.com`;
-        document.head.appendChild(metaTag);
-    })
-
-
-    async function onSignIn(googleUser) {
-        const profile = googleUser.getBasicProfile();
-        console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
-        console.log('Name: ' + profile.getName());
-        console.log('Image URL: ' + profile.getImageUrl());
-        console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
-    }
 
     async function handleLogin() {
-        let {data, error} = await supabase
-        async function handleLogin() {
-        let {data, error} = await supabase.auth.signInWithPassword({
-            email: email.value,
-            password: password.value
-        })
-    }
+      errorMsg.value = ''; // Reset error message
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.value,
+        password: password.value,
+      });
+
+      if (error) {
+        errorMsg.value = error.message;
+      } else {
+        // Store user info in local storage or state management (Pinia/Vuex)
+        localStorage.setItem('user', JSON.stringify(data.user));
+
+        // Redirect to home page
+        router.push('/tasks');
+      }
     }
 </script>
 
 <template>
-    <!-- Google Sign-in button -->
-    <!-- <div class="g-signin2" data-onsuccess="onSignIn"></div> -->
   <div class="container-fluid min-vh-100 d-flex flex-column align-items-center justify-content-center bg-black text-white">
     <div class="login-box p-5 shadow-lg">
       <h2 class="mb-4 fw-bold">Welcome back!</h2>
 
       <form @submit.prevent="handleLogin">
+        <div v-if="errorMsg" class="alert alert-danger">{{ errorMsg }}</div>
         <div class="mb-3">
           <label for="email" class="form-label text-gray">Email Address</label>
           <input type="email" id="email" v-model="email" class="form-control input-custom" required />
@@ -57,12 +45,6 @@
         <div class="mb-3">
           <label for="password" class="form-label text-gray">Password</label>
           <input type="password" id="password" v-model="password" class="form-control input-custom" required />
-        </div>
-
-        <div class="mb-3">
-            <p>Already have an account? Log in 
-                <router-link to="/login">here.</router-link>
-            </p>
         </div>
 
         <button type="submit" class="btn-custom w-100 mt-3">Log in</button>

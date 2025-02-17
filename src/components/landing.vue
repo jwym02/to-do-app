@@ -58,7 +58,7 @@ const navigateToLogin = () => {
     transform: translateY(-5px);
   }
   .container-fluid {
-    background-color: black !important;
+    background: linear-gradient(to bottom, #0D0D2B, #22206E);
   }
 
   .unique {

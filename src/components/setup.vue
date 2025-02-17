@@ -3,15 +3,24 @@
     import { createClient } from '@supabase/supabase-js'
     const email = ref('');
     const password = ref('');
+    const username = ref('');
     const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    async function handleLogin() {
-        let {data, error} = await supabase.auth.signUp({
-            email: email.value,
-            password: password.value
-        })
+    const errorMsg = ref('');
+
+    async function handleSignUp() {
+      let { data, error } = await supabase.auth.signUp({
+        email: email.value,
+        password: password.value,
+        username: username,
+      })
+      if (error) {
+        errorMsg.value = error.message;
+      } else {
+        alert("Account created successfully! Please check your email to verify your account.");
+      }
     }
 </script>
 
@@ -22,10 +31,16 @@
     <div class="login-box p-5 shadow-lg">
       <h2 class="mb-4 fw-bold">Sign up for a new Account today!</h2>
 
-      <form @submit.prevent="handleLogin">
+      <form @submit.prevent="handleSignUp">
+        <div v-if="errorMsg" class="alert alert-danger">{{ errorMsg }}</div>
         <div class="mb-3">
           <label for="email" class="form-label text-gray">Email Address</label>
           <input type="email" id="email" v-model="email" class="form-control input-custom" required />
+        </div>
+
+        <div class="mb-3">
+          <label for="password" class="form-label text-gray">Username</label>
+          <input type="text" id="password" v-model="username" class="form-control input-custom" required />
         </div>
 
         <div class="mb-3">

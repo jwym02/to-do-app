@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Setup from '../components/setup.vue'
 import LandingPage from '../components/landing.vue'
 import Login from '../components/login.vue'
+import Tasks from '../components/task.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -18,6 +19,10 @@ const router = createRouter({
     {
       path: '/login',
       component: Login,
+    },
+    {
+      path: '/tasks',
+      component: Tasks,
     },
     {
       path: '/about',
