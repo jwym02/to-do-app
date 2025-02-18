@@ -6,18 +6,29 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 let isSubscribed = false; // Track subscription status
 
 export async function getTasks() {
+    // auth check
+    const { data, error } = await supabase.auth.getUser();
+        if (error) {
+            console.error("Error fetching user:", error);
+            return [];
+        }
+        const user = data?.user;
+        if (!user || !user.id) {
+            console.error("User not authenticated. No user ID found.");
+            return [];
+        }
 // check if user has added any tasks
-    let { data: tasks, error } = await supabase
+    let { data: tasks, taskError } = await supabase
     .from('tasks')
-    .select('*');
+    .select('*')
+    .eq("user_id", user.id)
 
-    if (error) {
-        console.error("Supabase error:", error);
+    if (taskError) {
+        console.taskError("Supabase taskError:", taskError);
         return [];
     } else if (tasks.length === 0) {
         console.log("No tasks found RAHHHH")
     } else {
-        console.log("i found some!")
         return tasks || [];
     }
 }
@@ -41,36 +52,61 @@ export function subscribeToTaskUpdates(callback) {
 }
 
 export async function addTask(taskData) {
-    console.log("taskData received:", taskData);
-    let { data, error } = await supabase
+    const { data, error } = await supabase.auth.getUser();
+    if (error) {
+        console.error("Error fetching user:", error);
+        return { success: false, error: error.message };
+      }
+      
+      const user = data?.user; // Ensure user object is properly accessed
+      
+      if (!user) {
+        console.error("No user found, authentication required.");
+        return [];
+      }
+
+    let { data: insertedData, insertError } = await supabase
     .from('tasks')
     .insert([
         {
         name: taskData.name,
         due_date: taskData.due_date,
         due_time: taskData.due_time,
-        category: taskData.category
+        category: taskData.category,
+        user_id: user.id
         }
     ])
 
-    if (error) {
-        console.error("Error adding task", error);
+    if (insertError) {
+        console.error("Error adding task", insertError);
     } else {
-        console.log("Task added", data);
-        return {success:true, data};
+        console.log("Task added", insertedData);
+        return {success:true, insertedData};
     }
 }
 
-export async function deleteTask(id) {
-    let { data, error } = await supabase
+export async function deleteTask(task_id) {
+    // auth check
+    const { data, error } = await supabase.auth.getUser();
+        if (error) {
+            console.error("Error fetching user:", error);
+            return [];
+        }
+        const user = data?.user;
+        if (!user || !user.id) {
+            console.error("User not authenticated. No user ID found.");
+            return [];
+        }
+
+    let { data: delition, deleteError } = await supabase
     .from('tasks')
     .delete()
-    .eq('id', id);
+    .eq('task_id', task_id)
+    .eq('user_id', user.id);
 
-    if (error) {
-        console.error("Error deleting task", error);
+    if (deleteError) {
+        console.error("Error deleting task", deleteError);
     } else {
         console.log("Task deleted", data);
-        return {success:true, data};
     }
 }

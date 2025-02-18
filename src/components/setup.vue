@@ -39,11 +39,6 @@
         </div>
 
         <div class="mb-3">
-          <label for="password" class="form-label text-gray">Username</label>
-          <input type="text" id="password" v-model="username" class="form-control input-custom" required />
-        </div>
-
-        <div class="mb-3">
           <label for="password" class="form-label text-gray">Password</label>
           <input type="password" id="password" v-model="password" class="form-control input-custom" required />
         </div>

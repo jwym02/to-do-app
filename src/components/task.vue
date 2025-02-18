@@ -2,6 +2,10 @@
 import Header from './header.vue'
 import { ref, onMounted } from 'vue'
 import { getTasks, subscribeToTaskUpdates, addTask, deleteTask } from './task.js'
+import { createClient } from '@supabase/supabase-js'
+const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 const task = ref({
   name: '',
@@ -14,9 +18,22 @@ let counter = 0;
 
 
 async function fetchTasks() {
+
+  const { data, error } = await supabase.auth.getUser();
+  if (error) {
+    console.error("Error fetching user:", error);
+    return;
+  }
+
+  const user = data?.user;
+  if (!user) {
+    alert("You must be logged in to view tasks!");
+    return;
+  }
+
   currentTasks.value = []; // Clear before fetching
   const tasks = await getTasks();
-  console.log("current is " + tasks)
+  // console.log("current is " + tasks)
   currentTasks.value = tasks;
 }
 
@@ -32,14 +49,20 @@ async function handleAddTask(e) {
 
 async function handleDeleteTask(id) {
   const result = await deleteTask(id);
-  if (result.success) {
-    alert("Task deleted successfully!");
-  } else {
-    alert("Error deleting task.");
-  }
+  console.log("task id is " + id)
 }
 
-onMounted(() => {
+
+
+onMounted( async () => {
+    const { data: user } = await supabase.auth.getUser();
+    if (!user) {
+    alert("You must be logged in to view tasks!");
+    return;
+  }
+
+
+
   fetchTasks();
   if (!subscribeToTaskUpdates.isSubscribed) {
     subscribeToTaskUpdates(fetchTasks);
@@ -78,14 +101,14 @@ onMounted(() => {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(task, index) in currentTasks" :key="task.id" >
+          <tr v-for="(task, index) in currentTasks" :key="task.task_id" >
             <td>{{ index + 1 }}</td> 
             <td>{{ task.name }}</td>
             <td>{{ task.due_date }}</td>
             <td>{{ task.due_time.slice(0, 5) }}</td>
             <td>{{ task.category }}</td>
             <td>
-              <button style="font-size:24px" @click="handleDeleteTask(task.id)">
+              <button style="font-size:24px" @click="handleDeleteTask(task.task_id)">
                 <i class="fa fa-trash-o"></i>
               </button>
             </td>
