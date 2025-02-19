@@ -110,3 +110,7 @@ export async function deleteTask(task_id) {
         console.log("Task deleted", data);
     }
 }
+
+export async function editTask(task) {
+    
+}

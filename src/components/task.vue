@@ -1,7 +1,7 @@
 <script setup>
 import Header from './header.vue'
 import { ref, onMounted } from 'vue'
-import { getTasks, subscribeToTaskUpdates, addTask, deleteTask } from './task.js'
+import { getTasks, subscribeToTaskUpdates, addTask, deleteTask, editTask } from './task.js'
 import { createClient } from '@supabase/supabase-js'
 const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -16,6 +16,14 @@ const task = ref({
 const currentTasks = ref([]) // Make currentTasks reactive
 let counter = 0;
 
+const showModal = ref(false);
+function openModal(task) {
+  showModal.value = true;
+};
+
+const closeModal = () => {
+  showModal.value = false;
+};
 
 async function fetchTasks() {
 
@@ -50,6 +58,11 @@ async function handleAddTask(e) {
 async function handleDeleteTask(id) {
   const result = await deleteTask(id);
   console.log("task id is " + id)
+}
+
+async function saveEditChanges(task) {
+  const result = await editTask(task);
+  console.log("Task is edited.")
 }
 
 
@@ -98,6 +111,8 @@ onMounted( async () => {
             <th scope="col">Due Date</th>
             <th scope="col">Due Time</th>
             <th scope="col">Category</th>
+            <th></th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -107,14 +122,33 @@ onMounted( async () => {
             <td>{{ task.due_date }}</td>
             <td>{{ task.due_time.slice(0, 5) }}</td>
             <td>{{ task.category }}</td>
-            <td>
-              <button style="font-size:24px" @click="handleDeleteTask(task.task_id)">
+            <td class="buttons">
+              <button style="font-size:24px" @click="handleDeleteTask(task.task_id)" class="taskButtons">
                 <i class="fa fa-trash-o"></i>
+              </button>
+              <button type="button" class="btn btn-primary edit-button taskButtons" @click="openModal(task)">
+                Edit
               </button>
             </td>
           </tr>
         </tbody>
       </table>
+    </div>
+    <div class="modal fade" id="editTask" tabindex="-1" role="dialog" aria-labelledby="editTaskTitle" aria-hidden="true" :class="{ show: showModal }" v-if="showModal">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="editTaskTitle">Edit Task</h5>
+          </div>
+          <div class="modal-body">
+            <p>{{ this.task.id }}</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary"  @click="closeModal">Close</button>
+            <button type="button" class="btn btn-primary" @click="saveEditChanges">Save changes</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -177,4 +211,25 @@ onMounted( async () => {
     color: red;
     outline: none;
   }
+
+  .buttons {
+    align-items: center;
+  }
+
+  .edit-button { 
+    height: 100%;
+  }
+
+  .taskButtons {
+    height: 50px;
+  }
+  .modal {
+  display: block; /* Ensure modal is visible when triggered */
+  background: rgba(0, 0, 0, 0.5); /* Darken background */
+}
+
+.modal.fade {
+  opacity: 1;
+  transition: opacity 5s ease-in-out;
+}
 </style>
