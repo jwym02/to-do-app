@@ -1,7 +1,7 @@
 <script setup>
 import Header from './header.vue'
 import { ref, onMounted, computed } from 'vue'
-import { getTasks, subscribeToTaskUpdates, addTask, deleteTask, editTask } from './task.js'
+import { getTasks, subscribeToTaskUpdates, addTask, deleteTask, editTask, setStatus } from './task.js'
 import { createClient } from '@supabase/supabase-js'
 const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -16,7 +16,7 @@ const task = ref({
 });
 const currentTasks = ref([]) // Make currentTasks reactive
 let counter = 0;
-const selected_status = ref("Incomplete"); // Default value
+let selected_status = ref("") // Default value
 const editTaskInfo = ref({});
 const showModal = ref(false);
 
@@ -75,16 +75,11 @@ const closeModal = () => {
   showModal.value = false;
 };
 
-const buttonClass = computed(() => {
-  return {
-    'btn-danger': selected_status.value === "Incomplete",
-    'btn-warning': selected_status.value === "In Progress",
-    'btn-success': selected_status.value === "Completed",
-  }
-});
 
-function setStatus(status) {
-  selected_status.value = status; // Update selected value
+async function changeStatus(newStatus, taskId) {
+  console.log(taskId)
+  const result = await setStatus(newStatus, taskId);
+  console.log("I am chosen!!")
 }
 
 
@@ -146,26 +141,13 @@ onMounted( async () => {
             <td>{{ task.due_time.slice(0, 5) }}</td>
             <td>{{ task.category }}</td>
             <td>
-              <div class="dropdown show">
-  <a 
-    class="btn btn-secondary dropdown-toggle" 
-    :class="buttonClass" 
-    href="#" 
-    role="button" 
-    id="dropdownMenuLink" 
-    data-toggle="dropdown" 
-    aria-haspopup="true" 
-    aria-expanded="false"
-    @click.prevent
-  >
-    {{ selected_status }}
-  </a>
-  <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-    <a class="dropdown-item" href="#" @click.prevent="setStatus('Incomplete')">Incomplete</a>
-    <a class="dropdown-item" href="#" @click.prevent="setStatus('In Progress')">In Progress</a>
-    <a class="dropdown-item" href="#" @click.prevent="setStatus('Completed')">Completed</a>
-  </div>
-</div>
+
+              <select class="form-select" aria-label="Default select example" v-model="task.progress" @change="changeStatus(task.progress, task.task_id)">
+                <option disabled></option>
+                <option value="Incomplete" class="bg-danger">Incomplete</option>
+                <option value="In Progress" class="bg-warning">In Progress</option>
+                <option value="Completed" class="bg-success">Completed</option>
+              </select>
 
             </td>
             <td class="buttons">

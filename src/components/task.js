@@ -145,3 +145,30 @@ export async function editTask(newTask) {
 
         
 }
+
+export async function setStatus(newStatus, task_id) {
+    const { data, error } = await supabase.auth.getUser();
+        if (error) {
+            console.error("Error fetching user:", error);
+            return [];
+        }
+        const user = data?.user;
+        if (!user || !user.id) {
+            console.error("User not authenticated. No user ID found.");
+            return [];
+        }
+
+        let { data: editData, editError } = await supabase
+        .from('tasks')
+        .update({progress: newStatus})
+        .eq('task_id', task_id)
+        .select();
+
+        if (editError) {
+            alert("Error updating task! ", editError.message)
+        } else {
+            console.log("Task updated", editData);
+            return true;
+        }
+
+}

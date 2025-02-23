@@ -18,8 +18,7 @@ async function handleLogout() {
         <div class="row">
         <div class="col-6"></div>
         <div class="col-6 header">
-            <router-link to="/about">About</router-link>
-            <router-link to="/contact">Contact</router-link>
+            <button class="bg-primary"></button>
             <button class="btn btn-danger" @click="handleLogout">Logout</button>
         </div>
     </div>
