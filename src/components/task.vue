@@ -1,6 +1,6 @@
 <script setup>
 import Header from './header.vue'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { getTasks, subscribeToTaskUpdates, addTask, deleteTask, editTask } from './task.js'
 import { createClient } from '@supabase/supabase-js'
 const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
@@ -11,19 +11,14 @@ const task = ref({
   name: '',
   due_date: '',
   due_time: '',
-  category: ''
+  category: '',
+  progress: '',
 });
 const currentTasks = ref([]) // Make currentTasks reactive
 let counter = 0;
-
+const selected_status = ref("Incomplete"); // Default value
+const editTaskInfo = ref({});
 const showModal = ref(false);
-function openModal(task) {
-  showModal.value = true;
-};
-
-const closeModal = () => {
-  showModal.value = false;
-};
 
 async function fetchTasks() {
 
@@ -60,9 +55,36 @@ async function handleDeleteTask(id) {
   console.log("task id is " + id)
 }
 
-async function saveEditChanges(task) {
-  const result = await editTask(task);
-  console.log("Task is edited.")
+async function saveEditChanges(newTask) {
+  const result = await editTask(newTask);
+  if (result) {
+    alert("Task updated successfully!")
+    fetchTasks();
+    closeModal();
+  } else {
+    alert("Error updating task.")
+  }
+}
+
+function openModal(task) {
+  showModal.value = true;
+  editTaskInfo.value = {... task}
+}
+
+const closeModal = () => {
+  showModal.value = false;
+};
+
+const buttonClass = computed(() => {
+  return {
+    'btn-danger': selected_status.value === "Incomplete",
+    'btn-warning': selected_status.value === "In Progress",
+    'btn-success': selected_status.value === "Completed",
+  }
+});
+
+function setStatus(status) {
+  selected_status.value = status; // Update selected value
 }
 
 
@@ -111,6 +133,7 @@ onMounted( async () => {
             <th scope="col">Due Date</th>
             <th scope="col">Due Time</th>
             <th scope="col">Category</th>
+            <th scope="col">Completion Rate</th>
             <th></th>
             <th></th>
           </tr>
@@ -122,6 +145,29 @@ onMounted( async () => {
             <td>{{ task.due_date }}</td>
             <td>{{ task.due_time.slice(0, 5) }}</td>
             <td>{{ task.category }}</td>
+            <td>
+              <div class="dropdown show">
+  <a 
+    class="btn btn-secondary dropdown-toggle" 
+    :class="buttonClass" 
+    href="#" 
+    role="button" 
+    id="dropdownMenuLink" 
+    data-toggle="dropdown" 
+    aria-haspopup="true" 
+    aria-expanded="false"
+    @click.prevent
+  >
+    {{ selected_status }}
+  </a>
+  <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+    <a class="dropdown-item" href="#" @click.prevent="setStatus('Incomplete')">Incomplete</a>
+    <a class="dropdown-item" href="#" @click.prevent="setStatus('In Progress')">In Progress</a>
+    <a class="dropdown-item" href="#" @click.prevent="setStatus('Completed')">Completed</a>
+  </div>
+</div>
+
+            </td>
             <td class="buttons">
               <button style="font-size:24px" @click="handleDeleteTask(task.task_id)" class="taskButtons">
                 <i class="fa fa-trash-o"></i>
@@ -141,11 +187,22 @@ onMounted( async () => {
             <h5 class="modal-title" id="editTaskTitle">Edit Task</h5>
           </div>
           <div class="modal-body">
-            <p>{{ this.task.id }}</p>
+
+            <label>Task:</label>
+            <input type="text" v-model=editTaskInfo.name class="form-control">
+
+            <label for="dueDate">Due Date:</label>
+            <input id = "dueDate" type="text" v-model=editTaskInfo.due_date class="form-control">
+
+            <label>Due Time:</label>
+            <input type="text" v-model=editTaskInfo.due_time class="form-control">
+
+            <label>Category:</label>
+            <input type="text" v-model=editTaskInfo.category class="form-control">
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary"  @click="closeModal">Close</button>
-            <button type="button" class="btn btn-primary" @click="saveEditChanges">Save changes</button>
+            <button type="button" class="btn btn-primary" @click="saveEditChanges(editTaskInfo)">Save changes</button>
           </div>
         </div>
       </div>
@@ -231,5 +288,9 @@ onMounted( async () => {
 .modal.fade {
   opacity: 1;
   transition: opacity 5s ease-in-out;
+}
+
+.form-control {
+  margin-bottom: 20px;
 }
 </style>

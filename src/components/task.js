@@ -73,7 +73,8 @@ export async function addTask(taskData) {
         due_date: taskData.due_date,
         due_time: taskData.due_time,
         category: taskData.category,
-        user_id: user.id
+        user_id: user.id,
+        // progress: taskData.progress,
         }
     ])
 
@@ -111,6 +112,36 @@ export async function deleteTask(task_id) {
     }
 }
 
-export async function editTask(task) {
-    
+export async function editTask(newTask) {
+    // auth check
+    const { data, error } = await supabase.auth.getUser();
+        if (error) {
+            console.error("Error fetching user:", error);
+            return [];
+        }
+        const user = data?.user;
+        if (!user || !user.id) {
+            console.error("User not authenticated. No user ID found.");
+            return [];
+        }
+    let { data: editData, editError } = await supabase
+        .from('tasks')
+        .update({ 
+            name: newTask.name,
+            due_date: newTask.due_date,
+            due_time: newTask.due_time,
+            category: newTask.category,
+            progress: newTask.progress,
+        })
+        .eq('task_id', newTask.task_id)
+        .select();
+
+        if (editError) {
+            alert("Error updating task! ", editError.message)
+        } else {
+            console.log("Task updated", editData);
+            return true;
+        }
+
+        
 }
